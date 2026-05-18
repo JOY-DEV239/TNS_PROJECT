@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: tns-project-api
+    runtime: docker
+    rootDir: backend
+    plan: free
+    healthCheckPath: /api/stats/departments
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: tns-project-db
+          property: connectionString
+      - key: DB_USER
+        fromDatabase:
+          name: tns-project-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: tns-project-db
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+
+  - type: web
+    name: tns-project-frontend
+    runtime: static
+    rootDir: frontend
+    plan: free
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: tns-project-api
+          envVarKey: RENDER_EXTERNAL_URL
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+databases:
+  - name: tns-project-db
+    plan: free
+    databaseName: placement_db
+    user: placement_user
