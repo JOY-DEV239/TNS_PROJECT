@@ -22,11 +22,11 @@ const Login = ({ setAuth }) => {
   const verifyOtp = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('/auth/verify-otp', { mobileNumber, otp });
+      const res = await axios.post('/auth/verify-otp', { mobileNumber, otp: otp.trim() });
       setMessage(res.data.message);
       if (res.data.message.includes('configure email')) setStep(3);
       else setStep(4);
-    } catch (err) { setMessage('Invalid OTP'); }
+    } catch (err) { setMessage(err.response?.data?.message || 'Invalid OTP'); }
   };
 
   const setupPassword = async (e) => {

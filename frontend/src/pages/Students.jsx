@@ -6,6 +6,7 @@ const Students = () => {
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({
     fullName: '',
     registerNumber: '',
@@ -16,7 +17,6 @@ const Students = () => {
     placementStatus: 'UNPLACED',
     selectedCompanyName: '',
     salaryPackage: '',
-    interviewsAttended: 0,
   });
   const [message, setMessage] = useState('');
 
@@ -52,41 +52,57 @@ const Students = () => {
     setForm(prev => ({ ...prev, [key]: value }));
   };
 
+  const clearForm = () => {
+    setForm({
+      fullName: '',
+      registerNumber: '',
+      department: '',
+      cgpa: '',
+      technicalSkills: '',
+      resumeUrl: '',
+      placementStatus: 'UNPLACED',
+      selectedCompanyName: '',
+      salaryPackage: '',
+    });
+    setEditingId(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const cgpa = parseFloat(form.cgpa);
+    if (cgpa < 0 || cgpa > 10) {
+      setMessage('CGPA must be between 0 and 10.');
+      return;
+    }
     try {
       const payload = {
         fullName: form.fullName,
         registerNumber: form.registerNumber,
         department: form.department,
-        cgpa: parseFloat(form.cgpa),
+        cgpa: cgpa,
         technicalSkills: form.technicalSkills.split(',').map(skill => skill.trim()).filter(Boolean),
         resumeUrl: form.resumeUrl,
         placementStatus: form.placementStatus,
         salaryPackage: form.salaryPackage ? parseFloat(form.salaryPackage) : null,
-        interviewsAttended: parseInt(form.interviewsAttended, 10),
+        interviewsAttended: form.placementStatus === 'PLACED' ? 3 : 0,
       };
       if (form.selectedCompanyName.trim()) {
         payload.selectedCompany = { name: form.selectedCompanyName.trim() };
       }
-      await axios.post('/students', payload);
-      setMessage('Student added successfully.');
-      setForm({
-        fullName: '',
-        registerNumber: '',
-        department: '',
-        cgpa: '',
-        technicalSkills: '',
-        resumeUrl: '',
-        placementStatus: 'UNPLACED',
-        selectedCompanyName: '',
-        salaryPackage: '',
-        interviewsAttended: 0,
-      });
+      
+      if (editingId) {
+        await axios.put(`/students/${editingId}`, payload);
+        setMessage('Student updated successfully.');
+      } else {
+        await axios.post('/students', payload);
+        setMessage('Student added successfully.');
+      }
+      
+      clearForm();
       setShowForm(false);
       fetchAll();
     } catch (err) {
-      setMessage('Unable to add student.');
+      setMessage(editingId ? 'Unable to update student.' : 'Unable to add student.');
     }
   };
 
@@ -104,22 +120,24 @@ const Students = () => {
 
       {showForm && (
         <div className="glass-card" style={{ marginBottom: '20px' }}>
-          <h2>Add Student</h2>
+          <h2>{editingId ? 'Edit Student' : 'Add Student'}</h2>
           <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '12px' }}>
             <input placeholder="Full Name" value={form.fullName} onChange={(e) => handleChange('fullName', e.target.value)} required />
             <input placeholder="Register Number" value={form.registerNumber} onChange={(e) => handleChange('registerNumber', e.target.value)} required />
             <input placeholder="Department" value={form.department} onChange={(e) => handleChange('department', e.target.value)} required />
-            <input placeholder="CGPA" type="number" step="0.01" value={form.cgpa} onChange={(e) => handleChange('cgpa', e.target.value)} required />
+            <input placeholder="CGPA" type="number" step="0.01" min="0" max="10" value={form.cgpa} onChange={(e) => handleChange('cgpa', e.target.value)} required />
             <input placeholder="Technical Skills (comma separated)" value={form.technicalSkills} onChange={(e) => handleChange('technicalSkills', e.target.value)} />
             <input placeholder="Resume URL" value={form.resumeUrl} onChange={(e) => handleChange('resumeUrl', e.target.value)} />
             <input placeholder="Company Name" value={form.selectedCompanyName} onChange={(e) => handleChange('selectedCompanyName', e.target.value)} />
             <input placeholder="Salary Package" type="number" step="0.01" value={form.salaryPackage} onChange={(e) => handleChange('salaryPackage', e.target.value)} />
-            <input placeholder="Interviews Attended" type="number" value={form.interviewsAttended} onChange={(e) => handleChange('interviewsAttended', e.target.value)} />
             <select value={form.placementStatus} onChange={(e) => handleChange('placementStatus', e.target.value)}>
               <option value="UNPLACED">UNPLACED</option>
               <option value="PLACED">PLACED</option>
             </select>
-            <button type="submit" className="btn">Save Student</button>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button type="submit" className="btn">{editingId ? 'Update Student' : 'Save Student'}</button>
+              {editingId && <button type="button" className="btn btn-secondary" onClick={() => { clearForm(); setShowForm(false); }}>Cancel</button>}
+            </div>
           </form>
         </div>
       )}
@@ -157,6 +175,7 @@ const Students = () => {
                   <td style={{ padding: '12px' }}>
                     <button className="btn-secondary" style={{ padding: '4px 8px', borderRadius: '4px' }} onClick={() => {
                       setShowForm(true);
+                      setEditingId(s.id);
                       setForm({
                         fullName: s.fullName || '',
                         registerNumber: s.registerNumber || '',
@@ -167,7 +186,6 @@ const Students = () => {
                         placementStatus: s.placementStatus || 'UNPLACED',
                         selectedCompanyName: s.selectedCompany?.name || '',
                         salaryPackage: s.salaryPackage || '',
-                        interviewsAttended: s.interviewsAttended || 0,
                       });
                     }}>Edit</button>
                   </td>

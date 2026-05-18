@@ -1,6 +1,6 @@
 package com.placement.backend.dto;
 import lombok.Data;
-import lombok.AllArgsConstructor;
+
 @Data
 public class JwtResponse {
     private String token;

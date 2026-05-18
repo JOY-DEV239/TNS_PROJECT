@@ -5,7 +5,7 @@ import axios from '../axiosConfig';
 const Dashboard = () => {
   const [stats, setStats] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [summary, setSummary] = useState({ totalStudents: 0, placedStudents: 0, activeDrives: 0, topPackage: '0' });
+  const [summary, setSummary] = useState({ totalStudents: 0, placedStudents: 0, activeDrives: 0, topPackage: 0 });
 
   useEffect(() => {
     fetchStats();
@@ -14,18 +14,20 @@ const Dashboard = () => {
   const fetchStats = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('/stats/departments');
-      setStats(res.data);
-      const totalStudents = res.data.reduce((sum, item) => sum + item.totalStudents, 0);
-      const placedStudents = res.data.reduce((sum, item) => sum + item.placedStudents, 0);
+      const [departmentRes, summaryRes] = await Promise.all([
+        axios.get('/stats/departments'),
+        axios.get('/stats/summary'),
+      ]);
+      setStats(departmentRes.data);
       setSummary({
-        totalStudents,
-        placedStudents,
-        activeDrives: '—',
-        topPackage: '—',
+        totalStudents: summaryRes.data.totalStudents,
+        placedStudents: summaryRes.data.placedStudents,
+        activeDrives: summaryRes.data.activeDrives,
+        topPackage: summaryRes.data.topPackage,
       });
     } catch (err) {
       setStats([]);
+      setSummary({ totalStudents: 0, placedStudents: 0, activeDrives: 0, topPackage: 0 });
     } finally {
       setLoading(false);
     }
@@ -57,7 +59,7 @@ const Dashboard = () => {
         </div>
         <div className="glass-card metric-card">
           <span className="metric-label">Top Package</span>
-          <span className="metric-value">{summary.topPackage} LPA</span>
+          <span className="metric-value">{Number(summary.topPackage).toFixed(2)} LPA</span>
         </div>
       </div>
 

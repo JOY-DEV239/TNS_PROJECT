@@ -13,13 +13,17 @@ import Settings from './pages/Settings';
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(!!Cookies.get('jwt_token'));
 
+  const handleAuth = (value) => {
+    setIsAuthenticated(value);
+  };
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={!isAuthenticated ? <Login setAuth={setIsAuthenticated} /> : <Navigate to="/" />} />
+        <Route path="/login" element={!isAuthenticated ? <Login setAuth={handleAuth} /> : <Navigate to="/" />} />
 
         {/* Protected Routes */}
-        <Route element={isAuthenticated ? <Layout setAuth={setIsAuthenticated} /> : <Navigate to="/login" />}>
+        <Route element={isAuthenticated ? <Layout setAuth={handleAuth} /> : <Navigate to="/login" />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/students" element={<Students />} />
           <Route path="/companies" element={<Companies />} />

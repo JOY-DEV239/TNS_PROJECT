@@ -33,7 +33,6 @@ public class CertificationController {
     private final StudentRepository studentRepository;
     private final Path uploadDir = Paths.get("cert_uploads");
 
-    @Autowired
     public CertificationController(CertificationRepository certRepository, StudentRepository studentRepository) {
         this.certRepository = certRepository;
         this.studentRepository = studentRepository;

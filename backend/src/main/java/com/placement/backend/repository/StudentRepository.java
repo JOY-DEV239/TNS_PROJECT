@@ -6,4 +6,5 @@ import java.util.List;
 public interface StudentRepository extends JpaRepository<Student, Long> {
     List<Student> findByDepartment(String department);
     List<Student> findByPlacementStatus(com.placement.backend.entity.PlacementStatus status);
+    boolean existsByRegisterNumber(String registerNumber);
 }

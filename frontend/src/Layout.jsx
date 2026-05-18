@@ -21,22 +21,22 @@ const Layout = ({ setAuth }) => {
       <aside className="sidebar">
         <h2 style={{ padding: '0 10px', color: 'var(--accent)', marginBottom: '20px' }}>TNS Placement</h2>
         
-        <NavLink to="/" className={({isActive}) => `btn ${!isActive ? 'btn-secondary' : ''}`} style={{justifyContent: 'flex-start'}}>
+        <NavLink to="/" className={({isActive}) => `btn ${isActive ? '' : 'btn-secondary'}`} style={{justifyContent: 'flex-start'}}>
           <LayoutDashboard size={20} /> Dashboard
         </NavLink>
-        <NavLink to="/students" className={({isActive}) => `btn ${!isActive ? 'btn-secondary' : ''}`} style={{justifyContent: 'flex-start'}}>
+        <NavLink to="/students" className={({isActive}) => `btn ${isActive ? '' : 'btn-secondary'}`} style={{justifyContent: 'flex-start'}}>
           <Users size={20} /> Students
         </NavLink>
-        <NavLink to="/companies" className={({isActive}) => `btn ${!isActive ? 'btn-secondary' : ''}`} style={{justifyContent: 'flex-start'}}>
+        <NavLink to="/companies" className={({isActive}) => `btn ${isActive ? '' : 'btn-secondary'}`} style={{justifyContent: 'flex-start'}}>
           <Building size={20} /> Companies
         </NavLink>
-        <NavLink to="/drives" className={({isActive}) => `btn ${!isActive ? 'btn-secondary' : ''}`} style={{justifyContent: 'flex-start'}}>
+        <NavLink to="/drives" className={({isActive}) => `btn ${isActive ? '' : 'btn-secondary'}`} style={{justifyContent: 'flex-start'}}>
           <Calendar size={20} /> Schedules
         </NavLink>
-        <NavLink to="/certifications" className={({isActive}) => `btn ${!isActive ? 'btn-secondary' : ''}`} style={{justifyContent: 'flex-start'}}>
+        <NavLink to="/certifications" className={({isActive}) => `btn ${isActive ? '' : 'btn-secondary'}`} style={{justifyContent: 'flex-start'}}>
           <Award size={20} /> Certifications
         </NavLink>
-        <NavLink to="/settings" className={({isActive}) => `btn ${!isActive ? 'btn-secondary' : ''}`} style={{justifyContent: 'flex-start'}}>
+        <NavLink to="/settings" className={({isActive}) => `btn ${isActive ? '' : 'btn-secondary'}`} style={{justifyContent: 'flex-start'}}>
           <Settings size={20} /> Settings
         </NavLink>
         

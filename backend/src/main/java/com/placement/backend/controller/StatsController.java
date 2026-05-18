@@ -1,10 +1,11 @@
 package com.placement.backend.controller;
 
 import com.placement.backend.entity.Certification;
+import com.placement.backend.entity.DriveStatus;
 import com.placement.backend.entity.Student;
 import com.placement.backend.repository.CertificationRepository;
+import com.placement.backend.repository.PlacementDriveRepository;
 import com.placement.backend.repository.StudentRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,11 +18,12 @@ import java.util.stream.Collectors;
 public class StatsController {
     private final StudentRepository studentRepository;
     private final CertificationRepository certificationRepository;
+    private final PlacementDriveRepository placementDriveRepository;
 
-    @Autowired
-    public StatsController(StudentRepository studentRepository, CertificationRepository certificationRepository) {
+    public StatsController(StudentRepository studentRepository, CertificationRepository certificationRepository, PlacementDriveRepository placementDriveRepository) {
         this.studentRepository = studentRepository;
         this.certificationRepository = certificationRepository;
+        this.placementDriveRepository = placementDriveRepository;
     }
 
     @GetMapping("/departments")
@@ -49,6 +51,26 @@ public class StatsController {
 
         stats.add(buildStats("OTHER", totalByDept, placedByDept, certByDept));
         return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/summary")
+    public ResponseEntity<SummaryStats> getSummaryStats() {
+        List<Student> students = studentRepository.findAll();
+
+        long totalStudents = students.size();
+        long placedStudents = students.stream()
+                .filter(s -> s.getPlacementStatus() != null && s.getPlacementStatus().name().equals("PLACED"))
+                .count();
+        long activeDrives = placementDriveRepository.findAll().stream()
+                .filter(d -> d.getStatus() == DriveStatus.UPCOMING || d.getStatus() == DriveStatus.ONGOING)
+                .count();
+        double topPackage = students.stream()
+                .map(Student::getSalaryPackage)
+                .filter(Objects::nonNull)
+                .max(Double::compareTo)
+                .orElse(0.0);
+
+        return ResponseEntity.ok(new SummaryStats(totalStudents, placedStudents, activeDrives, Math.round(topPackage * 100.0) / 100.0));
     }
 
     private DepartmentStats buildStats(String branch, Map<String, Long> totalByDept, Map<String, Long> placedByDept, Map<String, Long> certByDept) {
@@ -100,6 +122,36 @@ public class StatsController {
 
         public double getPlacementPercentage() {
             return placementPercentage;
+        }
+    }
+
+    public static class SummaryStats {
+        private final long totalStudents;
+        private final long placedStudents;
+        private final long activeDrives;
+        private final double topPackage;
+
+        public SummaryStats(long totalStudents, long placedStudents, long activeDrives, double topPackage) {
+            this.totalStudents = totalStudents;
+            this.placedStudents = placedStudents;
+            this.activeDrives = activeDrives;
+            this.topPackage = topPackage;
+        }
+
+        public long getTotalStudents() {
+            return totalStudents;
+        }
+
+        public long getPlacedStudents() {
+            return placedStudents;
+        }
+
+        public long getActiveDrives() {
+            return activeDrives;
+        }
+
+        public double getTopPackage() {
+            return topPackage;
         }
     }
 }
